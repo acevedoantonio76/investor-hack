@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel de Evaluación de Inversiones</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0f4c81">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header>
+    <h1>🏦 Panel de Evaluación de Inversionistas</h1>
+    <button id="installBtn" hidden>Instalar App</button>
+  </header>
+
+  <section class="filters">
+    <input id="q" type="search" placeholder="Buscar por nombre, estilo o firma...">
+    <select id="risk">
+      <option value="">Riesgo (todos)</option>
+      <option value="Bajo">Bajo</option>
+      <option value="Medio">Medio</option>
+      <option value="Medio–alto">Medio–alto</option>
+      <option value="Alto">Alto</option>
+    </select>
+    <select id="horizon">
+      <option value="">Horizonte (todos)</option>
+      <option value="Corto">Corto</option>
+      <option value="Mediano">Mediano</option>
+      <option value="Largo">Largo</option>
+    </select>
+  </section>
+
+  <main id="cards"></main>
+
+  <footer>
+    <small>PWA demo • Funciona offline</small>
+  </footer>
+
+  <script src="./app.js" type="module"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+    // Install prompt
+    let deferred;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferred = e;
+      document.getElementById('installBtn').hidden = false;
+    });
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (deferred) {
+        deferred.prompt();
+        await deferred.userChoice;
+        deferred = null;
+        document.getElementById('installBtn').hidden = true;
+      }
+    });
+  </script>
+</body>
+</html>
