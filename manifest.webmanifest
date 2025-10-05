@@ -1,4 +1,6 @@
-{
+{"start_url": "/investor-hack/",
+"scope": "/investor-hack/"
+
   "name": "Investing Panel v2",
   "short_name": "InvestPanel",
   "start_url": "./index.html",
