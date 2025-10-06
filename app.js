@@ -1,4 +1,6 @@
-// Carga de datos y UI básica
+// ----------------------
+// Variables base
+// ----------------------
 const whoSel = document.getElementById('who');
 const qEl = document.getElementById('q');
 const ansEl = document.getElementById('answer');
@@ -8,6 +10,9 @@ const clearBtn = document.getElementById('clearBtn');
 
 let PANEL = [];
 
+// ----------------------
+// Helpers
+// ----------------------
 function showStatus(msg, type = 'ok') {
   statusEl.style.display = 'block';
   statusEl.className = `card ${type}`;
@@ -20,78 +25,103 @@ async function loadInvestors() {
     const res = await fetch('investors.json', { cache: 'no-store' });
     const data = await res.json();
     PANEL = data.investors || [];
-    // Llenar selector
     for (const inv of PANEL) {
       const opt = document.createElement('option');
       opt.value = inv.id;
       opt.textContent = inv.name;
       whoSel.appendChild(opt);
     }
-    showStatus('Panel cargado', 'ok');
+    showStatus('Panel cargado ✅', 'ok');
   } catch (e) {
     console.error(e);
-    showStatus('Error cargando data/investors.json', 'error');
+    showStatus('Error cargando investors.json', 'error');
   }
 }
 
-// Motor simple de ruteo por palabras clave
+// ----------------------
+// Ruteo por palabras clave
+// ----------------------
+// Cada ruta es un regex que detecta ciertos términos y los asigna a un panelista
 const ROUTES = [
-  { key: /macro|fed|tasa|bono|dólar|commodities|geopol/i, id: 'soros' },
-  { key: /momentum|tendenc|rally|break(out)?|tape/i, id: 'ptj' },
-  { key: /opcion|options|puts?|calls?|volatil/i, id: 'cardona' },
-  { key: /short|fraude|contable|burbuja|sobrevalor/i, id: 'chanos' },
-  { key: /activis|buyback|consejo|board|icahn|proxy/i, id: 'ackman' },
-  { key: /cuant|estad|alpha|señal|backtest|datos/i, id: 'simons' },
+  // Macro global, tasas, bonos, inflación, petróleo, forex
+  { key: /macro|fed|tasa|bono|bonos|yield|inflaci|cpi|pce|petroleo|oil|commodities|forex|dólar|dolar/i, id: 'soros' },
+
+  // Momentum, rally, tendencias
+  { key: /momentum|tendenc|rally|break(out)?|tape|swing/i, id: 'ptj' },
+
+  // Opciones, derivados, volatilidad, crypto
+  { key: /opcion|options|puts?|calls?|derivados|volatil|skew|crypto|bitcoin|ethereum|doge|xrp/i, id: 'cardona' },
+
+  // Cortos, fraudes, burbujas
+  { key: /short|fraude|contable|burbuja|sobrevalor|scam/i, id: 'chanos' },
+
+  // Activismo, campañas en empresas
+  { key: /activis|buyback|consejo|board|icahn|proxy|activista/i, id: 'ackman' },
+
+  // Cuantitativo, estadística, datos
+  { key: /cuant|estad|alpha|señal|backtest|datos|machine learning|algoritmo/i, id: 'simons' },
+
+  // Market making, liquidez, alta frecuencia
   { key: /market(-|\s)?making|hft|liquidez|intra|spread|execution/i, id: 'griffin' },
-  { key: /catalizador|earnings|guidance|long\/short|idiosin/i, id: 'cohen' }
+
+  // Tech, earnings, empresas específicas
+  { key: /nvidia|amd|tesla|apple|meta|google|microsoft|earnings|guidance|resultados|catalizador|tech|tecnolog/i, id: 'cohen' }
 ];
 
 function autoPickInvestor(question) {
   for (const r of ROUTES) {
     if (r.key.test(question)) return r.id;
   }
-  // fallback: momentum táctico
-  return 'ptj';
+  return 'ptj'; // fallback: momentum
 }
 
+// ----------------------
+// Formato de respuesta
+// ----------------------
 function formatAnswer(inv, question) {
   const q = question.trim();
   const bullets = [];
 
-  // Sugerencias según palabras clave
-  if (/opcion|options|puts?|calls?|volatil|skew/i.test(q)) {
-    bullets.push('Evaluaría spreads en vez de calls/puts desnudos para mejorar el perfil riesgo/beneficio.');
+  // Notas dinámicas por tema detectado
+  if (/opcion|puts?|calls?|derivados|volatil/i.test(q)) {
+    bullets.push('Usa estructuras como spreads o collars para controlar riesgo.');
   }
-  if (/macro|fed|tasa|bono|inflaci|cpi|pce/i.test(q)) {
-    bullets.push('Atento a la asimetría macro (expectativas vs. sorpresas de datos).');
+  if (/inflaci|cpi|pce|tasa|bono|yield/i.test(q)) {
+    bullets.push('Monitorea sorpresas macro y diferenciales de tasas.');
   }
-  if (/short|sobrevalor|fraude|burbuja/i.test(q)) {
-    bullets.push('Valida catalizadores temporales; los cortos requieren paciencia y control de margen.');
+  if (/crypto|bitcoin|ethereum|doge|xrp/i.test(q)) {
+    bullets.push('Crypto es muy volátil, conviene posiciones pequeñas y stops claros.');
   }
-  if (/momentum|rally|break(out)?|tendenc/i.test(q)) {
-    bullets.push('Sigue el flujo: entra escalonado y usa stops dinámicos (ATR o mínimos/máximos).');
+  if (/nvidia|amd|tesla|apple|meta|google|microsoft/i.test(q)) {
+    bullets.push('Atento a resultados trimestrales y múltiplos de valoración.');
   }
-  if (/earnings|resultados|guidance|catalizador/i.test(q)) {
-    bullets.push('Reduce exposición antes del evento o usa estructuras definidas por riesgo.');
+  if (/petroleo|oil|commodities/i.test(q)) {
+    bullets.push('Los commodities dependen de shocks de oferta y demanda global.');
+  }
+  if (/short|burbuja|fraude/i.test(q)) {
+    bullets.push('En cortos, paciencia y catalizadores claros son clave.');
   }
 
-  // Plantilla de respuesta con la “voz” del panelista
   return (
 `👤 **${inv.name}** — estilo: ${inv.style.join(', ')} · horizonte: ${inv.horizon} · riesgo: ${inv.risk}
 
 _${inv.voice}_
 
 **Cómo abordaría tu pregunta:**
-• Tesis: resume en 1–2 líneas qué esperas que pase.
-• Entrada: niveles/plazos claros; tamaño inicial pequeño (0.25–0.5R).
-• Gestión: si la tesis no se valida, sal sin dudar; si se valida, añade en confirmaciones.
-• Riesgo: stop técnico o de tiempo; máximo riesgo por idea 0.5–1.0R.
-${bullets.length ? `\n**Notas específicas:**\n• ${bullets.join('\n• ')}` : ''}
+• Tesis: resume qué esperas que pase.  
+• Entrada: niveles claros, tamaño pequeño al inicio.  
+• Gestión: añade si se confirma; corta si no valida.  
+• Riesgo: define stop técnico/temporal (0.5–1.0R máx).  
 
-**Recuerda:** esto es educativo, no es asesoría financiera.`
+${bullets.length ? `**Notas específicas:**\n• ${bullets.join('\n• ')}` : ''}
+
+⚠️ Esto es educativo, no asesoría financiera.`
   );
 }
 
+// ----------------------
+// Eventos
+// ----------------------
 function handleAsk() {
   const question = qEl.value || '';
   if (!question.trim()) {
@@ -103,7 +133,6 @@ function handleAsk() {
   if (id === 'auto') id = autoPickInvestor(question);
   const inv = PANEL.find(p => p.id === id) || PANEL[0];
   ansEl.textContent = 'Pensando…';
-  // pequeña pausa visual
   setTimeout(() => {
     ansEl.innerHTML = formatAnswer(inv, question);
     ansEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
