@@ -1,48 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de Evaluación de Inversionistas v2</title>
-<link rel="manifest" href="./manifest.webmanifest">
-<meta name="theme-color" content="#101112">
-<link rel="stylesheet" href="./styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Panel de Inversionistas · Lite</title>
+  <link rel="icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --brand:#38bdf8; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
+           background: radial-gradient(1200px 600px at 20% -10%, #1f2937 0%, #0b1020 40%, #070a14 100%);
+           color: var(--text); padding: 24px; }
+    h1 { margin: 0 0 8px; font-size: 22px; letter-spacing:.2px }
+    .lite { color: var(--muted); font-weight:600; margin-left:6px }
+    .card { background: linear-gradient(180deg, #0f172a 0%, #0b1222 100%); border:1px solid #1f2937;
+            border-radius:16px; padding:16px; max-width:920px; margin: 16px 0; box-shadow: 0 10px 30px rgba(0,0,0,.35);}
+    label { color: var(--muted); font-size: 13px; }
+    select, input, textarea, button { width:100%; margin-top:6px; }
+    select, input, textarea { background:#0a0f1d; border:1px solid #263044; color: var(--text); border-radius:10px; padding:12px; }
+    textarea { min-height:90px; resize: vertical; }
+    .row { display:grid; grid-template-columns: 1fr; gap:12px; }
+    @media (min-width:720px){ .row{ grid-template-columns: 280px 1fr; } }
+    button { border:0; padding:12px 14px; border-radius:12px; cursor:pointer; font-weight:700; letter-spacing:.2px;
+             background: linear-gradient(90deg, #0ea5e9, #22d3ee); color:#071423; }
+    button:hover { opacity:.95 }
+    .meta { font-size: 12px; color: var(--muted); margin-top:8px }
+    .answer { line-height:1.6; white-space: pre-wrap; }
+    .error { color:#fecaca; background:#7f1d1d33; border:1px solid #7f1d1d; padding:10px 12px; border-radius:10px; }
+    .ok { color:#bbf7d0; background:#14532d33; border:1px solid #14532d; padding:10px 12px; border-radius:10px; }
+    .hint { color:#93c5fd; }
+  </style>
 </head>
 <body>
-<header>
-  <h1>🏦 Panel de Inversionistas · v2</h1>
-  <div class="controls">
-    <div class="view-toggle">
-      <button id="cardsView" class="active">Tarjetas</button>
-      <button id="tableView">Tabla</button>
+  <h1>Panel de Inversionistas <span class="lite">· Lite</span></h1>
+
+  <div id="status" class="card" style="display:none"></div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="who">Panelista</label>
+        <select id="who">
+          <option value="auto">Mejor ajuste (auto)</option>
+          <!-- El JS llenará la lista real desde data/investors.json -->
+        </select>
+        <div class="meta">Elige uno o deja <b>auto</b> y la app intentará escoger al más adecuado según tu pregunta.</div>
+      </div>
+      <div>
+        <label for="q">Tu pregunta</label>
+        <textarea id="q" placeholder="Ej.: ¿Cómo operarías un FOMC hawkish esta semana? ¿Usarías opciones o futuros?"></textarea>
+      </div>
     </div>
-    <input id="q" type="search" placeholder="Buscar nombre, estilo o firma...">
-    <select id="risk">
-      <option value="">Riesgo (todos)</option>
-      <option>Alto</option><option>Medio–alto</option><option>Medio</option><option>Bajo</option><option>—</option>
-    </select>
-    <select id="horizon">
-      <option value="">Horizonte (todos)</option>
-      <option>Corto</option><option>Mediano</option><option>Largo</option><option>Corto–mediano</option><option>Mediano–largo</option><option>—</option>
-    </select>
-    <button id="exportCsv">Exportar CSV</button>
-    <button id="installBtn" hidden>Instalar</button>
+    <div style="display:flex; gap:12px; margin-top:12px">
+      <button id="askBtn">Preguntar</button>
+      <button id="clearBtn" style="background:#334155; color:#e5e7eb;">Limpiar</button>
+    </div>
   </div>
-</header>
 
-<main>
-  <section id="cards" hidden></section>
-  <section id="table" class="table-wrap" hidden></section>
-</main>
+  <div class="card">
+    <label>Respuesta del panel</label>
+    <div id="answer" class="answer" style="margin-top:8px; min-height:64px;"></div>
+    <div class="meta" style="margin-top:10px">
+      <span class="hint">Consejo:</span> afina con palabras clave como <i>macro, momentum, value, opciones, short, riesgo, horizonte</i>.
+    </div>
+  </div>
 
-<footer>PWA • Offline • Filtros + ordenamiento + exportación</footer>
-
-<script type="module" src="./app.js"></script>
-<script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-let deferred;
-window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferred=e;document.getElementById('installBtn').hidden=false;});
-document.getElementById('installBtn').addEventListener('click',async()=>{ if(!deferred) return; deferred.prompt(); await deferred.userChoice; deferred=null; document.getElementById('installBtn').hidden=true; });
-</script>
+  <script src="app.js" defer></script>
 </body>
 </html>
