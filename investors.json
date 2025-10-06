@@ -14,7 +14,7 @@
       "style": ["cuantitativo", "estadístico", "market-neutral"],
       "horizon": "muy corto",
       "risk": "controlado",
-      "voice": "Busco señales robustas y no obvias; la ventaja está en los datos y el control de colas."
+      "voice": "Busco señales robustas y no obvias; la ventaja está en los datos y en el control de colas."
     },
     {
       "id": "soros",
