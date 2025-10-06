@@ -1,6 +1,3 @@
-// ----------------------
-// Variables base
-// ----------------------
 const whoSel = document.getElementById('who');
 const qEl = document.getElementById('q');
 const ansEl = document.getElementById('answer');
@@ -10,9 +7,6 @@ const clearBtn = document.getElementById('clearBtn');
 
 let PANEL = [];
 
-// ----------------------
-// Helpers
-// ----------------------
 function showStatus(msg, type = 'ok') {
   statusEl.style.display = 'block';
   statusEl.className = `card ${type}`;
@@ -38,33 +32,14 @@ async function loadInvestors() {
   }
 }
 
-// ----------------------
-// Ruteo por palabras clave
-// ----------------------
-// Cada ruta es un regex que detecta ciertos términos y los asigna a un panelista
 const ROUTES = [
-  // Macro global, tasas, bonos, inflación, petróleo, forex
   { key: /macro|fed|tasa|bono|bonos|yield|inflaci|cpi|pce|petroleo|oil|commodities|forex|dólar|dolar/i, id: 'soros' },
-
-  // Momentum, rally, tendencias
   { key: /momentum|tendenc|rally|break(out)?|tape|swing/i, id: 'ptj' },
-
-  // Opciones, derivados, volatilidad, crypto
   { key: /opcion|options|puts?|calls?|derivados|volatil|skew|crypto|bitcoin|ethereum|doge|xrp/i, id: 'cardona' },
-
-  // Cortos, fraudes, burbujas
   { key: /short|fraude|contable|burbuja|sobrevalor|scam/i, id: 'chanos' },
-
-  // Activismo, campañas en empresas
   { key: /activis|buyback|consejo|board|icahn|proxy|activista/i, id: 'ackman' },
-
-  // Cuantitativo, estadística, datos
   { key: /cuant|estad|alpha|señal|backtest|datos|machine learning|algoritmo/i, id: 'simons' },
-
-  // Market making, liquidez, alta frecuencia
   { key: /market(-|\s)?making|hft|liquidez|intra|spread|execution/i, id: 'griffin' },
-
-  // Tech, earnings, empresas específicas
   { key: /nvidia|amd|tesla|apple|meta|google|microsoft|earnings|guidance|resultados|catalizador|tech|tecnolog/i, id: 'cohen' }
 ];
 
@@ -72,17 +47,13 @@ function autoPickInvestor(question) {
   for (const r of ROUTES) {
     if (r.key.test(question)) return r.id;
   }
-  return 'ptj'; // fallback: momentum
+  return 'ptj';
 }
 
-// ----------------------
-// Formato de respuesta
-// ----------------------
 function formatAnswer(inv, question) {
   const q = question.trim();
   const bullets = [];
 
-  // Notas dinámicas por tema detectado
   if (/opcion|puts?|calls?|derivados|volatil/i.test(q)) {
     bullets.push('Usa estructuras como spreads o collars para controlar riesgo.');
   }
@@ -119,9 +90,6 @@ ${bullets.length ? `**Notas específicas:**\n• ${bullets.join('\n• ')}` : ''
   );
 }
 
-// ----------------------
-// Eventos
-// ----------------------
 function handleAsk() {
   const question = qEl.value || '';
   if (!question.trim()) {
