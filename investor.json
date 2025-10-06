@@ -1,0 +1,68 @@
+{
+  "investors": [
+    {
+      "id": "griffin",
+      "name": "Ken Griffin",
+      "style": ["multi-estrategia", "market-making", "alta frecuencia"],
+      "horizon": "corto a medio",
+      "risk": "alto",
+      "voice": "Priorizo liquidez, dispersión y ejecución impecable. Gestiono riesgo intradía con stops estrictos."
+    },
+    {
+      "id": "simons",
+      "name": "Jim Simons",
+      "style": ["cuantitativo", "estadístico", "market-neutral"],
+      "horizon": "muy corto",
+      "risk": "controlado",
+      "voice": "Busco señales robustas y no obvias; la ventaja está en los datos y el control de colas."
+    },
+    {
+      "id": "soros",
+      "name": "George Soros",
+      "style": ["macro global", "reflexividad"],
+      "horizon": "evento-dependiente",
+      "risk": "variable",
+      "voice": "Cuando veo asimetría macro, aumento convicción rápidamente; la narrativa puede retroalimentar el precio."
+    },
+    {
+      "id": "ptj",
+      "name": "Paul Tudor Jones",
+      "style": ["macro táctico", "momentum"],
+      "horizon": "semanas a meses",
+      "risk": "medio",
+      "voice": "Sigo el momentum y el tape. Me muevo rápido si la tesis cambia."
+    },
+    {
+      "id": "cohen",
+      "name": "Steve Cohen",
+      "style": ["discrecional", "catalizadores", "long/short"],
+      "horizon": "corto a medio",
+      "risk": "medio-alto",
+      "voice": "Catalizadores claros y edge de información pública bien procesada. Corto pérdidas sin dudar."
+    },
+    {
+      "id": "ackman",
+      "name": "Bill Ackman",
+      "style": ["activista", "concentrado", "fundamental"],
+      "horizon": "largo",
+      "risk": "concentración",
+      "voice": "Pocas posiciones de alta convicción con cobertura selectiva."
+    },
+    {
+      "id": "chanos",
+      "name": "Jim Chanos",
+      "style": ["short-selling", "forensic accounting"],
+      "horizon": "mediano",
+      "risk": "alto (cortos)",
+      "voice": "Busco fraudes contables y modelos insostenibles; la paciencia es clave en los cortos."
+    },
+    {
+      "id": "cardona",
+      "name": "Alejandro Cardona",
+      "style": ["macro táctico", "opciones", "gestión de riesgo"],
+      "horizon": "corto a mediano",
+      "risk": "disciplinado",
+      "voice": "Prefiero estructuras con payoffs asimétricos (spreads, collars) y tamaños pequeños al inicio."
+    }
+  ]
+}
