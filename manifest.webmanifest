@@ -1,15 +1,20 @@
-{"start_url": "/investor-hack/",
-"scope": "/investor-hack/"
-
-  "name": "Investing Panel v2",
-  "short_name": "InvestPanel",
-  "start_url": "./index.html",
+{
+  "name": "Panel de Inversionistas",
+  "short_name": "Inversionistas",
+  "description": "Haz preguntas y recibe respuestas del panel de inversionistas.",
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#101112",
-  "theme_color": "#101112",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "assets/icon-512.png",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
