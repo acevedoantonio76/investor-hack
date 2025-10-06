@@ -1,111 +1,119 @@
-async function loadData(){ const r = await fetch('./data/investors.json'); return r.json(); }
+// Carga de datos y UI básica
+const whoSel = document.getElementById('who');
+const qEl = document.getElementById('q');
+const ansEl = document.getElementById('answer');
+const statusEl = document.getElementById('status');
+const askBtn = document.getElementById('askBtn');
+const clearBtn = document.getElementById('clearBtn');
 
-const state = { data:[], filtered:[], sort:{key:null, dir:1} };
+let PANEL = [];
 
-function match(x, q){ if(!q) return true; return (x.name+' '+x.firm+' '+x.style+' '+x.strategy).toLowerCase().includes(q.toLowerCase()); }
-function matchRisk(x, r){ return !r || (x.risk||'').toLowerCase()===r.toLowerCase(); }
-function matchHorizon(x, h){ return !h || (x.horizon||'').toLowerCase()===h.toLowerCase(); }
-
-function filterData(){
-  const q = document.getElementById('q').value.trim();
-  const r = document.getElementById('risk').value;
-  const h = document.getElementById('horizon').value;
-  state.filtered = state.data.filter(x=>match(x,q)&&matchRisk(x,r)&&matchHorizon(x,h));
-  render();
+function showStatus(msg, type = 'ok') {
+  statusEl.style.display = 'block';
+  statusEl.className = `card ${type}`;
+  statusEl.textContent = msg;
+  setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
 }
 
-function sortBy(key){
-  if(state.sort.key===key) state.sort.dir*=-1; else { state.sort.key=key; state.sort.dir=1; }
-  state.filtered.sort((a,b)=>{
-    const A=a[key]??'', B=b[key]??'';
-    if(typeof A==='number' && typeof B==='number') return (A-B)*state.sort.dir;
-    return (''+A).localeCompare(''+B)*state.sort.dir;
-  });
-  render();
+async function loadInvestors() {
+  try {
+    const res = await fetch('data/investors.json', { cache: 'no-store' });
+    const data = await res.json();
+    PANEL = data.investors || [];
+    // Llenar selector
+    for (const inv of PANEL) {
+      const opt = document.createElement('option');
+      opt.value = inv.id;
+      opt.textContent = inv.name;
+      whoSel.appendChild(opt);
+    }
+    showStatus('Panel cargado', 'ok');
+  } catch (e) {
+    console.error(e);
+    showStatus('Error cargando data/investors.json', 'error');
+  }
 }
 
-function simulateAnswer(item, q){
-  const s=(item.style||'').toLowerCase();
-  if(s.includes('cuantitativo')) return `${item.name}: modelaría el edge esperado y controlaría riesgo (VaR) antes de actuar. Pregunta: "${q}"`;
-  if(s.includes('macro')) return `${item.name}: depende del ciclo macro, tasas y flujo global de liquidez. Pregunta: "${q}"`;
-  if(s.includes('activismo')) return `${item.name}: buscaría catalizadores y mejoras de gobierno corporativo. Pregunta: "${q}"`;
-  if(s.includes('corto')) return `${item.name}: el timing y la gestión de posiciones mandan. Pregunta: "${q}"`;
-  return `${item.name}: evaluaría asimetría riesgo/beneficio y disciplina. Pregunta: "${q}"`;
+// Motor simple de ruteo por palabras clave
+const ROUTES = [
+  { key: /macro|fed|tasa|bono|dólar|commodities|geopol/i, id: 'soros' },
+  { key: /momentum|tendenc|rally|break(out)?|tape/i, id: 'ptj' },
+  { key: /opcion|options|puts?|calls?|volatil/i, id: 'cardona' },
+  { key: /short|fraude|contable|burbuja|sobrevalor/i, id: 'chanos' },
+  { key: /activis|buyback|consejo|board|icahn|proxy/i, id: 'ackman' },
+  { key: /cuant|estad|alpha|señal|backtest|datos/i, id: 'simons' },
+  { key: /market(-|\s)?making|hft|liquidez|intra|spread|execution/i, id: 'griffin' },
+  { key: /catalizador|earnings|guidance|long\/short|idiosin/i, id: 'cohen' }
+];
+
+function autoPickInvestor(question) {
+  for (const r of ROUTES) {
+    if (r.key.test(question)) return r.id;
+  }
+  // fallback: momentum táctico
+  return 'ptj';
 }
 
-function card(item){
-  const el=document.createElement('div'); el.className='card';
-  el.innerHTML=`
-    <h3>${item.name}</h3>
-    <div class="badge">${item.firm||''}</div>
-    <div class="badge">Riesgo: ${item.risk||'—'}</div>
-    <div class="badge">Horizonte: ${item.horizon||'—'}</div>
-    <p><b>Estilo:</b> ${item.style||'—'}</p>
-    <p><b>Estrategia:</b> ${item.strategy||'—'}</p>
-    <p><b>CAGR:</b> ${fmt(item.cagr)} · <b>Sharpe:</b> ${fmt(item.sharpe)} · <b>MaxDD:</b> ${fmt(item.max_drawdown)}%</p>
-    <button data-name="${item.name}">Preguntar (Avatar)</button>
-  `;
-  el.querySelector('button').addEventListener('click',()=>{
-    const q=prompt(`¿Qué quieres preguntarle a ${item.name}?`); if(!q) return; alert(simulateAnswer(item,q));
-  });
-  return el;
-}
+function formatAnswer(inv, question) {
+  const q = question.trim();
+  const bullets = [];
 
-function tableView(data){
-  const headers=[
-    ['name','Inversionista'],['firm','Firma'],['style','Estilo'],['horizon','Horizonte'],
-    ['strategy','Estrategia'],['risk','Riesgo'],['cagr','CAGR %'],['sharpe','Sharpe'],['max_drawdown','Max Drawdown %']
-  ];
-  const ths=headers.map(([k,t])=>`<th><button onclick="sortBy('${k}')">${t}</button></th>`).join('');
-  const rows=data.map(x=>`
-    <tr>
-      <td>${x.name||''}</td><td>${x.firm||''}</td><td>${x.style||''}</td><td>${x.horizon||''}</td>
-      <td>${x.strategy||''}</td><td>${x.risk||''}</td><td>${fmt(x.cagr)}</td><td>${fmt(x.sharpe)}</td><td>${fmt(x.max_drawdown)}</td>
-    </tr>`).join('');
-  return `<table><thead><tr>${ths}</tr></thead><tbody>${rows}</tbody></table>`;
-}
+  // Sugerencias según palabras clave
+  if (/opcion|options|puts?|calls?|volatil|skew/i.test(q)) {
+    bullets.push('Evaluaría spreads en vez de calls/puts desnudos para mejorar el perfil riesgo/beneficio.');
+  }
+  if (/macro|fed|tasa|bono|inflaci|cpi|pce/i.test(q)) {
+    bullets.push('Atento a la asimetría macro (expectativas vs. sorpresas de datos).');
+  }
+  if (/short|sobrevalor|fraude|burbuja/i.test(q)) {
+    bullets.push('Valida catalizadores temporales; los cortos requieren paciencia y control de margen.');
+  }
+  if (/momentum|rally|break(out)?|tendenc/i.test(q)) {
+    bullets.push('Sigue el flujo: entra escalonado y usa stops dinámicos (ATR o mínimos/máximos).');
+  }
+  if (/earnings|resultados|guidance|catalizador/i.test(q)) {
+    bullets.push('Reduce exposición antes del evento o usa estructuras definidas por riesgo.');
+  }
 
-function fmt(v){ if(v===null||v===undefined||v==='') return '—'; if(typeof v==='number') return Number.isInteger(v)? v : v.toFixed(2); return v; }
+  // Plantilla de respuesta con la “voz” del panelista
+  return (
+`👤 **${inv.name}** — estilo: ${inv.style.join(', ')} · horizonte: ${inv.horizon} · riesgo: ${inv.risk}
 
-function render(){
-  const cardsRoot=document.getElementById('cards');
-  const tableRoot=document.getElementById('table');
-  const cardsHtml=state.filtered.map(card);
-  cardsRoot.innerHTML=''; cardsHtml.forEach(el=>cardsRoot.appendChild(el));
-  tableRoot.innerHTML=tableView(state.filtered);
-}
+_${inv.voice}_
 
-function exportCsv(){
-  const fields=['name','firm','style','horizon','strategy','risk','cagr','sharpe','max_drawdown'];
-  const lines=[fields.join(',')].concat(
-    state.filtered.map(x=>fields.map(k=>{
-      const v=x[k]; if(v===null||v===undefined) return ''; const s=(''+v).replaceAll('"','""'); return `"${s}"`;
-    }).join(','))
+**Cómo abordaría tu pregunta:**
+• Tesis: resume en 1–2 líneas qué esperas que pase.
+• Entrada: niveles/plazos claros; tamaño inicial pequeño (0.25–0.5R).
+• Gestión: si la tesis no se valida, sal sin dudar; si se valida, añade en confirmaciones.
+• Riesgo: stop técnico o de tiempo; máximo riesgo por idea 0.5–1.0R.
+${bullets.length ? `\n**Notas específicas:**\n• ${bullets.join('\n• ')}` : ''}
+
+**Recuerda:** esto es educativo, no es asesoría financiera.`
   );
-  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='investors.csv'; a.click();
 }
 
-function setView(which){
-  const cardsBtn=document.getElementById('cardsView');
-  const tableBtn=document.getElementById('tableView');
-  const cards=document.getElementById('cards');
-  const table=document.getElementById('table');
-  if(which==='cards'){ cards.hidden=false; table.hidden=true; cardsBtn.classList.add('active'); tableBtn.classList.remove('active'); }
-  else { cards.hidden=true; table.hidden=false; tableBtn.classList.add('active'); cardsBtn.classList.remove('active'); }
+function handleAsk() {
+  const question = qEl.value || '';
+  if (!question.trim()) {
+    showStatus('Escribe tu pregunta primero', 'error');
+    qEl.focus();
+    return;
+  }
+  let id = whoSel.value;
+  if (id === 'auto') id = autoPickInvestor(question);
+  const inv = PANEL.find(p => p.id === id) || PANEL[0];
+  ansEl.textContent = 'Pensando…';
+  // pequeña pausa visual
+  setTimeout(() => {
+    ansEl.innerHTML = formatAnswer(inv, question);
+    ansEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
 }
 
-window.sortBy=sortBy;
+askBtn?.addEventListener('click', handleAsk);
+clearBtn?.addEventListener('click', () => { qEl.value=''; ansEl.textContent=''; });
+qEl?.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'enter') handleAsk();
+});
 
-(async()=>{
-  state.data=await loadData();
-  state.filtered=[...state.data];
-  document.getElementById('q').addEventListener('input',filterData);
-  document.getElementById('risk').addEventListener('change',filterData);
-  document.getElementById('horizon').addEventListener('change',filterData);
-  document.getElementById('exportCsv').addEventListener('click',exportCsv);
-  document.getElementById('cardsView').addEventListener('click',()=>{ setView('cards'); });
-  document.getElementById('tableView').addEventListener('click',()=>{ setView('table'); });
-  setView('cards');
-  render();
-})();
+loadInvestors();
