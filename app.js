@@ -17,7 +17,7 @@ function showStatus(msg, type = 'ok') {
 
 async function loadInvestors() {
   try {
-    const res = await fetch('data/investors.json', { cache: 'no-store' });
+    const res = await fetch('investors.json', { cache: 'no-store' });
     const data = await res.json();
     PANEL = data.investors || [];
     // Llenar selector
